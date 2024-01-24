@@ -17,9 +17,9 @@
 
 document.getElementById('linkedin-signin').addEventListener('click', function() {
     const state = 'RANDOM_STRING'; // Generate a random string for state
-    const scope = 'r_liteprofile r_emailaddress'; // Set scope as needed
+    const scope = 'openid profile email'; // Set scope as needed
 
-    const linkedInAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}&scope=${encodeURIComponent(scope)}`;
+    const linkedInAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}&scope=${encodeURIComponent(scope)}`; //scope=liteprofile%20emailaddress%20w_member_social
 
     window.location.href = linkedInAuthURL;
 });
@@ -50,7 +50,7 @@ function fetchAccessToken(code) {
 }
 
 function fetchLinkedInUserData(accessToken) {
-    const apiURL = 'https://api.linkedin.com/v2/me';
+    const apiURL = 'https://api.linkedin.com/v2/userinfo';
 
     fetch(apiURL, {
         headers: {
