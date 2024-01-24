@@ -19,7 +19,7 @@ document.getElementById('linkedin-signin').addEventListener('click', function() 
     const state = 'RANDOM_STRING'; // Generate a random string for state
     const scope = 'r_liteprofile r_emailaddress'; // Set scope as needed
 
-    const linkedInAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientID}&redirect_uri=${encodeURIComponent(redirectURI)}&state=${state}&scope=${encodeURIComponent(scope)}`;
+    const linkedInAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}&scope=${encodeURIComponent(scope)}`;
 
     window.location.href = linkedInAuthURL;
 });
