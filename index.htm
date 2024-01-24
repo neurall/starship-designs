@@ -9,8 +9,10 @@
 </body>
 </html>
 <script>
-    const clientID = '86kgovwhryi6n4';
-    const redirectURI = 'https://starship-designs.com';
+    clientID = '86kgovwhryi6n4';
+    redirectURI = 'https://starship-designs.com';
+    token=''
+    user=0
 
 
 document.getElementById('linkedin-signin').addEventListener('click', function() {
@@ -38,10 +40,32 @@ function fetchAccessToken(code) {
     })
     .then(response => response.json())
     .then(data => {
+        token=data
+        fetchLinkedInUserData(data) 
         // Handle access token, use it to fetch user data from LinkedIn API
     })
     .catch(error => {
         console.error('Error:', error);
+    });
+}
+
+function fetchLinkedInUserData(accessToken) {
+    const apiURL = 'https://api.linkedin.com/v2/me';
+
+    fetch(apiURL, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'cache-control': 'no-cache',
+            'X-Restli-Protocol-Version': '2.0.0' // Required for LinkedIn API calls
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('LinkedIn User Data:', data);
+        user=data
+    })
+    .catch(error => {
+        console.error('Error fetching LinkedIn user data:', error);
     });
 }
 
