@@ -1,91 +1,68 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sign In with LinkedIn</title>
+    <title>Auth0 Authentication Example</title>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/1.13/auth0-spa-js.production.js"></script>
+    <style>
+        #user-profile img { height: 50px; }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
-    <button id="linkedin-signin">Sign In with LinkedIn</button>
+    <button id="login-btn" onclick="login()">Log In</button>
+    <button id="logout-btn" class="hidden" onclick="logout()">Log Out</button>
+
+    <div id="user-profile"></div>
+
+    <script>
+        let auth0 = null;
+
+        const initializeAuth0 = async () => {
+            auth0 = new Auth0Client({
+                domain: 'dev-tz3427iahju4ndd6.us.auth0.com',
+                client_id: 'n9uOgzUqbuLek90czABAhMCOQLMUHzMi',
+                redirect_uri: 'https://starship-designs.com'
+            });
+
+            await handleRedirectCallback();
+            updateUI();
+        };
+
+        const handleRedirectCallback = async () => {
+            if (window.location.search.includes('code=')) {
+                await auth0.handleRedirectCallback();
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        };
+
+        const login = async () => {
+            await auth0.loginWithRedirect();
+        };
+
+        const logout = () => {
+            auth0.logout({ returnTo: window.location.origin });
+        };
+
+        const updateUI = async () => {
+            const isAuthenticated = await auth0.isAuthenticated();
+
+            document.getElementById('login-btn').classList.toggle('hidden', isAuthenticated);
+            document.getElementById('logout-btn').classList.toggle('hidden', !isAuthenticated);
+
+            if (isAuthenticated) {
+                const user = await auth0.getUser();
+                document.getElementById('user-profile').innerHTML = `
+                    <img src="${user.picture}" alt="Profile" />
+                    <h2>${user.name}</h2>
+                    <p>Email: ${user.email}</p>
+                `;
+            } else {
+                document.getElementById('user-profile').innerHTML = '';
+            }
+        };
+
+        window.onload = initializeAuth0;
+    </script>
 </body>
 </html>
-<script>
-    clientID = '86kgovwhryi6n4';
-    redirectURI = 'https://starship-designs.com';
-    token=''
-    user=0
-
-
-document.getElementById('linkedin-signin').addEventListener('click', function() {
-    const state = 'RANDOM_STRING'; // Generate a random string for state
-    const scope = 'openid profile email'; // Set scope as needed
-
-    const linkedInAuthURL = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}&scope=${encodeURIComponent(scope)}`; //scope=liteprofile%20emailaddress%20w_member_social
-
-    window.location.href = linkedInAuthURL;
-});
-
-
-function fetchAccessToken(code) {
-
-    const clientSecret = 'YOUR_CLIENT_SECRET'; // Be cautious with client secret in frontend code
-
-    const tokenURL = 'https://www.linkedin.com/oauth/v2/accessToken';
-
-    fetch(tokenURL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: `grant_type=authorization_code&code=${code}&redirect_uri=${redirectURI}&client_id=${clientID}&client_secret=${clientSecret}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        token=data
-        fetchLinkedInUserData(data) 
-        // Handle access token, use it to fetch user data from LinkedIn API
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
-
-function fetchLinkedInUserData(accessToken) {
-    const apiURL = 'https://api.linkedin.com/v2/userinfo';
-
-    fetch(apiURL, {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'cache-control': 'no-cache',
-            'X-Restli-Protocol-Version': '2.0.0' // Required for LinkedIn API calls
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('LinkedIn User Data:', data);
-        alert(data)
-        
-        user=data
-    })
-    .catch(error => {
-        console.error('Error fetching LinkedIn user data:', error);
-    });
-}
-
-window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    // Check if the code and state exist
-    if (code && state) {
-        // Verify the state matches the one you sent to prevent CSRF attacks
-        // Assuming you have a way to retrieve the original state you sent
-
-        if (state === 'RANDOM_STRING') {
-            fetchAccessToken(code);
-        } else {
-            console.error('State mismatch. Possible CSRF attack.');
-        }
-    }
-}
-</script>
